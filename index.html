@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LINE User Info</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        .error { color: red; }
+        .success { color: green; }
+        .debug-info {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div id="status"></div>
+    <img id="userAvatar" width="50" height="50">
+    <p>ID: <span id="userId">Loading...</span></p>
+    <div class="debug-info" id="debugInfo"></div>
+
+    <script>
+        async function initializeLiff() {
+            const debugInfo = document.getElementById('debugInfo');
+            const status = document.getElementById('status');
+
+            try {
+                debugInfo.innerHTML = 'Initializing LIFF...';
+                await liff.init({ liffId: '2007062638-2XXBee1r' });
+                
+                debugInfo.innerHTML += '<br>LIFF initialized successfully';
+                debugInfo.innerHTML += '<br>Checking if user is logged in...';
+
+                if (!liff.isLoggedIn()) {
+                    debugInfo.innerHTML += '<br>User not logged in. Redirecting to login...';
+                    liff.login();
+                    return;
+                }
+
+                debugInfo.innerHTML += '<br>User is logged in. Getting profile...';
+                const profile = await liff.getProfile();
+                document.getElementById('userId').textContent = profile.userId;
+                document.getElementById('userAvatar').src = profile.pictureUrl;
+                status.innerHTML = '<p class="success">Successfully loaded user info!</p>';
+                
+                // 顯示額外的調試信息
+                debugInfo.innerHTML += '<br>LIFF Version: ' + liff.getVersion();
+                debugInfo.innerHTML += '<br>isInClient: ' + liff.isInClient();
+                debugInfo.innerHTML += '<br>OS: ' + liff.getOS();
+            } catch (error) {
+                status.innerHTML = '<p class="error">Error occurred!</p>';
+                document.getElementById('userId').textContent = 'Error: ' + error.message;
+                debugInfo.innerHTML += '<br>Error details: ' + JSON.stringify(error);
+            }
+        }
+        window.onload = initializeLiff;
+    </script>
+</body>
+</html>
